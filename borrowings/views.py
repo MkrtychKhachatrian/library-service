@@ -20,6 +20,23 @@ class BorrowingViewSet(viewsets.ModelViewSet):
 
         return BorrowingSerializer
 
+    def get_queryset(self):
+        is_active = self.request.query_params.get("is_active")
+        user__id = self.request.query_params.get("user_id")
+
+        queryset = self.queryset
+
+        if is_active:
+            queryset = queryset.filter(actual_return_date=None)
+
+        if self.request.user.is_staff and user__id:
+            queryset = queryset.filter(user_id=user__id)
+
+        if not self.request.user.is_staff:
+            queryset = queryset.filter(user=self.request.user)
+
+        return queryset
+
 
 class CreateBorrowingViewSet(APIView):
     serializer_class = BorrowingSerializer
